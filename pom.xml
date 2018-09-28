@@ -6,7 +6,7 @@
 
 	<groupId>com.antbean</groupId>
 	<artifactId>pay</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<packaging>jar</packaging>
 
 	<name>pay</name>
@@ -59,8 +59,21 @@
 				</configuration>
 			</plugin>
 		</plugins>
-
 	</build>
+
+	<distributionManagement>
+		<repository>
+			<id>rdc-releases</id>
+			<name>33326-release-YcHRi2</name>
+			<url>https://repo.rdc.aliyun.com/repository/33326-release-YcHRi2/</url>
+		</repository>
+		<snapshotRepository>
+			<id>rdc-snapshots</id>
+			<name>33326-snapshot-Pq18iL</name>
+			<url>https://repo.rdc.aliyun.com/repository/33326-snapshot-Pq18iL/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 
 
 </project>
