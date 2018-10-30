@@ -73,7 +73,7 @@ public class Alipay {
 				SIGN_TYPE);
 	}
 
-	public String createAppPayTrade(AppPayModel _model, TradeStatusProcessor processor, long delay) {
+	public String createAppPayTrade(AppPayModel _model) {
 		AlipayTradeAppPayModel model = new AlipayTradeAppPayModel();
 		model.setSubject(_model.getSubject());
 		model.setOutTradeNo(_model.getOutTradeNo());
@@ -99,7 +99,7 @@ public class Alipay {
 		}
 		if (null != _model.getDisablePayChannels() && 0 < _model.getDisablePayChannels().length) {
 			StringBuilder disablePayChannels = new StringBuilder();
-			for (PayChannel payChannel : _model.getEnablePayChannels()) {
+			for (PayChannel payChannel : _model.getDisablePayChannels()) {
 				disablePayChannels.append(",");
 				disablePayChannels.append(payChannel.getCode());
 			}
@@ -119,12 +119,35 @@ public class Alipay {
 			throw new RuntimeException(e);
 		}
 
+		return orderString;
+	}
+
+//	@Deprecated
+//	public String createAppPayTrade(AppPayModel _model, TradeStatusProcessor processor, long delay) {
+//		String orderString = createAppPayTrade(_model);
+//		if (processor != null && delay > 0) {
+//			String outTradeNo = _model.getOutTradeNo();
+//			SystemHolder.getSchedulerPool().schedule(new Runnable() {
+//				@Override
+//				public void run() {
+//					TradeStatus tradeStatus = queryTradeStatus(_model.getOutTradeNo());
+//					long nextDelay = process(outTradeNo, processor, tradeStatus);
+//					if (nextDelay > 0) {
+//						SystemHolder.getSchedulerPool().schedule(this, nextDelay, TimeUnit.MILLISECONDS);
+//					}
+//
+//				}
+//			}, delay, TimeUnit.MILLISECONDS);
+//		}
+//		return orderString;
+//	}
+
+	public void createTradeStatusQueryTask(String outTradeNo, TradeStatusProcessor processor, long delay) {
 		if (processor != null && delay > 0) {
-			String outTradeNo = _model.getOutTradeNo();
 			SystemHolder.getSchedulerPool().schedule(new Runnable() {
 				@Override
 				public void run() {
-					TradeStatus tradeStatus = queryTradeStatus(_model.getOutTradeNo());
+					TradeStatus tradeStatus = queryTradeStatus(outTradeNo);
 					long nextDelay = process(outTradeNo, processor, tradeStatus);
 					if (nextDelay > 0) {
 						SystemHolder.getSchedulerPool().schedule(this, nextDelay, TimeUnit.MILLISECONDS);
@@ -133,7 +156,6 @@ public class Alipay {
 				}
 			}, delay, TimeUnit.MILLISECONDS);
 		}
-		return orderString;
 	}
 
 	private long process(String outTradeNo, TradeStatusProcessor processor, TradeStatus tradeStatus) {
@@ -156,7 +178,7 @@ public class Alipay {
 		return nextDelay;
 	}
 
-	public void createRefund(RefundModel _model, RefundStatusProcessor processor, long delay) {
+	public void createRefund(RefundModel _model) {
 		AlipayTradeRefundModel model = new AlipayTradeRefundModel();
 		model.setOutTradeNo(_model.getOutTradeNo());
 		model.setOutRequestNo(_model.getOutRequestNo());
@@ -185,10 +207,17 @@ public class Alipay {
 			logger.warn("Create refund error", e);
 			throw new RuntimeException(e);
 		}
+	}
 
+//	@Deprecated
+//	public void createRefund(RefundModel _model, RefundStatusProcessor processor, long delay) {
+//		createRefund(_model);
+//		createRefundStatusQueryTask(_model.getOutTradeNo(), _model.getOutRequestNo(), processor, delay);
+//	}
+
+	public void createRefundStatusQueryTask(String outTradeNo, String outRequestNo, RefundStatusProcessor processor,
+			long delay) {
 		if (processor != null && delay > 0) {
-			String outTradeNo = _model.getOutTradeNo();
-			String outRequestNo = _model.getOutRequestNo();
 			SystemHolder.getSchedulerPool().schedule(new Runnable() {
 				@Override
 				public void run() {
@@ -208,7 +237,6 @@ public class Alipay {
 				}
 			}, delay, TimeUnit.MILLISECONDS);
 		}
-
 	}
 
 	public boolean verifyNotifyData(Map<String, String[]> notifyData) {
